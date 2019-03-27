@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.command.Subsystem;
 
 /**
- *
+ *  Subsystem that controls the open/close of the claw
  */
 public class ClawMechanism extends Subsystem {
 

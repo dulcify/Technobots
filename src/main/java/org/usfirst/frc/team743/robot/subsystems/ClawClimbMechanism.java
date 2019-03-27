@@ -7,12 +7,9 @@ import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 
 /**
- *
+ *  Subsystem that controls the motors to make the claw climb up/down
  */
 public class ClawClimbMechanism extends Subsystem {
-	
-	// TODO: find an appropriate speed 
-	public final double speed = 0.3;
 	
     public static final SpeedControllerGroup speedGroup = new SpeedControllerGroup(
 		new Talon(RobotMap.clawMotorClimb1), new Talon(RobotMap.clawMotorClimb2));
@@ -23,12 +20,12 @@ public class ClawClimbMechanism extends Subsystem {
         //setDefaultCommand(new MySpecialCommand());
     }
     public void Up() {
-    	speedGroup.set(speed);
+    	speedGroup.set(RobotMap.clawClimbSpeed);
     }
     public void Down() {
-    	speedGroup.set(-speed);
+    	speedGroup.set(-RobotMap.clawClimbSpeed);
     }
     public void Stop() {
-    	speedGroup.set(0);
+    	speedGroup.stopMotor();
     }
 }

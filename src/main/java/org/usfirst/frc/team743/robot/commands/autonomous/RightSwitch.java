@@ -10,20 +10,15 @@ public class RightSwitch extends TimedAutonomous {
 
 	public RightSwitch(double timeout) {
 		super(timeout);
-		
-//		commandGroup2.addSequential( new MoveX(2.5, -.5));
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	protected void stop_autonomous() {
-		// TODO Auto-generated method stub
 		commandGroup2.cancel();
 	}
 
 	@Override
 	protected void start_autonomous() {
-		// TODO Auto-generated method stub
 		commandGroup2.start();
 	}
 

@@ -14,14 +14,37 @@ package org.usfirst.frc.team743.robot;
  * floating around.
  */
 public class RobotMap {
-	// Talons
+
+	/* Motor speed adjustments
+
+		Greater than 1.0 = Faster
+		Equal to 1.0 = No speed adjustment
+		Less than 1.0 = Slower
+	*/
+	public static final double driveSpeedAdjust = 0.75;
+	public static final double clawTiltSpeedAdjust = 1.0;
+
+	// Speed definitions (must be between -1.0 and 1.0)
+	public static final double clawClimbSpeed = 0.25;
+
+	// Differential Drive Talons
 	public static final int motorLeftFirst = 0;
 	public static final int motorLeftSecond = 1;
 	public static final int motorRightFirst = 2;
 	public static final int motorRightSecond = 3;
 
-	public static final int clawMotorClimb1 = 8;
-	public static final int clawMotorClimb2 = 9;
+	// Mecanum Drive Talons
+	public static final int mecanumFrontLeft = 1;
+	public static final int mecanumFrontRight = 2;
+	public static final int mecanumBackLeft = 3;
+	public static final int mecanumBackRight = 4;
+
+	// Claw Talons
+	public static final int clawTiltMotor = 5;
+	public static final int clawMotorClimb1 = 6;
+	public static final int clawMotorClimb2 = 7;
+
+
 
 	// Pneumatics
 	public static final int frontPneumaticUp = 6;

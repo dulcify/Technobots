@@ -69,7 +69,13 @@ public class OI {
 
 	public OI(){
 
-		//  Code Claw Climb	
+		// Claw Tilt
+		povRight.whileHeld(new ClawTiltUp());
+		povRight.whenReleased(new ClawTiltStop());
+		povleft.whileHeld(new ClawTiltDown());
+		povleft.whenReleased(new ClawTiltStop());
+
+		// Claw Climb	
 		povUp.whileHeld(new ClawClimbUp());
 		povDown.whileHeld(new ClawClimbDown());
 		povUp.whenReleased(new ClawClimbStop());

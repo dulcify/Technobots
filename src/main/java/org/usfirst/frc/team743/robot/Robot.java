@@ -7,29 +7,25 @@
 
 package org.usfirst.frc.team743.robot;
 
-import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
 import org.usfirst.frc.team743.robot.commands.autonomous.DoNothing;
 import org.usfirst.frc.team743.robot.commands.autonomous.GoStraight;
 import org.usfirst.frc.team743.robot.subsystems.ClawClimbMechanism;
 import org.usfirst.frc.team743.robot.subsystems.ClawMechanism;
+import org.usfirst.frc.team743.robot.subsystems.ClawTiltMechanism;
+import org.usfirst.frc.team743.robot.subsystems.DifferentialDriveSystem;
+import org.usfirst.frc.team743.robot.subsystems.MecanumDriveSystem;
 import org.usfirst.frc.team743.robot.subsystems.TiltBack;
 import org.usfirst.frc.team743.robot.subsystems.TiltFront;
 
-import edu.wpi.cscore.CvSink;
-import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
-import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.SpeedControllerGroup;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -41,7 +37,7 @@ import edu.wpi.first.wpilibj.SpeedControllerGroup;
 public class Robot extends TimedRobot {
 	
 	
-	// TODO:  Enter the time the command will run.
+	// the time the command will run.
 	private static final int AUTONOMOUS_MODE_LENGTH = 15;
 	
 	// Pneumatics
@@ -50,16 +46,14 @@ public class Robot extends TimedRobot {
 	public static final TiltBack tiltBack = new TiltBack(); 
 
 	// Motors
+	public static final ClawTiltMechanism clawTiltMechanism = new ClawTiltMechanism();
 	public static final ClawClimbMechanism clawClimbMechanism = new ClawClimbMechanism();
 
-	// Drive system
-	public static final SpeedControllerGroup leftTalonGroup = new SpeedControllerGroup(
-		new Talon(RobotMap.motorLeftFirst), new Talon(RobotMap.motorLeftSecond));
-	public static final SpeedControllerGroup rightTalonGroup = new SpeedControllerGroup(
-		new Talon(RobotMap.motorRightFirst), new Talon(RobotMap.motorRightSecond));
-	public static final DifferentialDrive drive = new DifferentialDrive(
-		leftTalonGroup, rightTalonGroup
-	);
+	// Differential Drive System
+	//public static final DifferentialDriveSystem differential = new DifferentialDriveSystem();
+
+	// Mecanum Drive system
+	public static final MecanumDriveSystem mecanum = new MecanumDriveSystem();
 
 	public static OI m_oi;
 
@@ -71,6 +65,18 @@ public class Robot extends TimedRobot {
 	//Instantiating the chooser for the SmartDashboard
 	SendableChooser<Command> m_chooser = new SendableChooser<>();
 
+	private void initCameras()
+	{
+		UsbCamera camera1 = CameraServer.getInstance().startAutomaticCapture("Claw", 0);
+		camera1.setResolution(320, 240);
+		camera1.setFPS(15);
+		
+		UsbCamera camera2 = CameraServer.getInstance().startAutomaticCapture("Motion",1);             
+		camera2.setResolution(320, 240);
+		camera2.setFPS(10);
+	}
+
+
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -79,34 +85,13 @@ public class Robot extends TimedRobot {
 	public void robotInit() {
 		m_oi = new OI();
 		
-		//compressor.setClosedLoopControl(true);
-		//new Thread(() -> {
-            UsbCamera camera = CameraServer.getInstance().startAutomaticCapture("Claw", 0);
-			camera.setResolution(320, 240);
-			camera.setFPS(15);
-            
-            UsbCamera camera2 = CameraServer.getInstance().startAutomaticCapture("Motion",1);             
-            camera.setResolution(320, 240);
-			camera.setFPS(10);
-			
-            // Mat source = new Mat();
-            // Mat output = new Mat();                                
-            
-            // while(!Thread.interrupted()) {
-            //     cvSink.grabFrame(source);
-            //     Imgproc.cvtColor(source, output, Imgproc.COLOR_BGR2GRAY);
-            //     outputStream.putFrame(output);
-            // }
-        //}).start();
+		//initCameras();
+
+		// AUTONOMOUS MODE STUFF - NOT NEEDED IN 2019 FRC
+		// m_chooser.addDefault("Straight", new GoStraight(AUTONOMOUS_MODE_LENGTH));
+		// m_chooser.addObject("Nothing", new DoNothing(AUTONOMOUS_MODE_LENGTH));
 		
-		//Constructing adding options to the smart dashboard.
-//		m_chooser.addObject("Default Auto", new Station1Command(AUTONOMOUS_MODE_LENGTH));
-//		m_chooser.addObject("Middle", new Station2Command(AUTONOMOUS_MODE_LENGTH));
-//		m_chooser.addObject("Right", new Station3Command(AUTONOMOUS_MODE_LENGTH));
-		m_chooser.addDefault("Straight", new GoStraight(AUTONOMOUS_MODE_LENGTH));
-		m_chooser.addObject("Nothing", new DoNothing(AUTONOMOUS_MODE_LENGTH));
-		
-		SmartDashboard.putData("Auto mode", m_chooser);
+		// SmartDashboard.putData("Auto mode", m_chooser);
 	}
 	
 
@@ -199,14 +184,16 @@ public class Robot extends TimedRobot {
 	public void teleopPeriodic() {
 		Scheduler.getInstance().run();
 		
-		double x = -m_oi._xboxController.getY(Hand.kLeft);
-		double y = -m_oi._xboxController.getY(Hand.kRight);
+		// use this value as a scale to speed up or slow down the robot
+		double leftX = -m_oi._xboxController.getX(Hand.kLeft);
+		double leftY = -m_oi._xboxController.getY(Hand.kLeft);
 
+		double rightY = -m_oi._xboxController.getY(Hand.kRight);
+		double rightX = -m_oi._xboxController.getX(Hand.kRight);
 
-		double speedAdjust = .75;
-		drive.tankDrive(x* speedAdjust,y*speedAdjust);
-
-		//System.out.println("(" + x + ", " + y + ")");
+		mecanum.driveCartesian(leftY, leftX, 0.0);
+		
+		// differential.tankDrive(leftY, rightY);
 
 		// mecanum.driveCartesian(
 		// 		m_oi._xboxController.getX(Hand.kLeft)*.90,
